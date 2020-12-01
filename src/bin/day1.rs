@@ -1,4 +1,4 @@
-use rayon::prelude::*;
+use itertools::Itertools;
 
 const INPUT: &str = include_str!("../../input/day1_1.txt");
 
@@ -22,34 +22,21 @@ fn main() {
 
 /// from the list of input, find the two numbers that add up to 2020
 fn find_2020_tuple(input: &[i32]) -> Option<(i32, i32)> {
-    // simply walk through all numbers…
-    input.par_iter().enumerate().find_map_any(|(index, &a)| {
-        input
-            .par_iter()
-            // if we checked a + b, no need to check b + a, so skip all previous values
-            .skip(index)
-            .find_any(|&b| a + b == 2020)
-            // if an actual number has been found, return a and b as tuple
-            .map(|&b| (a, b))
-    })
+    input
+        .iter()
+        .tuple_combinations()
+        .find(|(&a, &b)| a + b == 2020)
+        .map(|(&a, &b)| (a, b))
 }
 
 /// from the list of input, find the three numbers that add up to 2020
 /// almost the same as part 1/tuples, except… You have to go deeper!
 fn find_2020_triple(input: &[i32]) -> Option<(i32, i32, i32)> {
-    input.par_iter().enumerate().find_map_any(|(index_a, &a)| {
-        input
-            .par_iter()
-            .enumerate()
-            .skip(index_a)
-            .find_map_any(|(index_b, &b)| {
-                input
-                    .par_iter()
-                    .skip(index_b)
-                    .find_any(|&c| a + b + c == 2020)
-                    .map(|&c| (a, b, c))
-            })
-    })
+    input
+        .iter()
+        .tuple_combinations()
+        .find(|(&a, &b, &c)| a + b + c == 2020)
+        .map(|(&a, &b, &c)| (a, b, c))
 }
 
 #[cfg(test)]
