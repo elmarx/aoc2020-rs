@@ -19,3 +19,5 @@ jobs:
         run: cargo check --all-targets
       - name: Test
         run: cargo test
+      - name: run all solutions
+        run: .github/run.sh
