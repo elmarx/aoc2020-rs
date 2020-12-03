@@ -21,24 +21,40 @@ fn parse_treemap(input: &[u8]) -> TreeMap {
     output
 }
 
-fn count_trees(map: &[Vec<bool>]) -> i32 {
-    // walk through all the rows, skip the first row, as the first step will lead directly to the second row
-    map.iter().enumerate().skip(1).fold(0, |acc, (step, row)| {
-        // index/coordinate where we enter this row is number of steps * 3 (cause we go 3 to the left)
-        // modulo width of a row (since we're repeating the pattern)
-        if row.get((step * 3) % row.len()).unwrap().to_owned() {
-            acc + 1
-        } else {
-            acc
-        }
-    })
+fn count_trees(map: &[Vec<bool>], right: usize, down: usize) -> i32 {
+    // walk through all the rows, skip the first row, as we never hit it anyway
+    map.iter()
+        .enumerate()
+        .skip(1)
+        // skip rows that we do not hit at all
+        .filter(|(row_number, _)| row_number % down == 0)
+        .fold(0, |acc, (row_number, row)| {
+            // the current step depends on the number of "downs" to go per step.
+            let step = row_number / down;
+
+            // index/coordinate where we enter this row is number of steps * #right (cause we go #right to the right)
+            // modulo width of a row (since we're repeating the pattern)
+            if row.get((step * right) % row.len()).unwrap().to_owned() {
+                acc + 1
+            } else {
+                acc
+            }
+        })
 }
 
 fn main() {
     let input = parse_treemap(INPUT);
-    let answer1 = count_trees(&input);
+    let answer1 = count_trees(&input, 3, 1);
 
     println!("Answer 1: {} trees would be encountered", answer1);
+
+    let slopes = &[(1, 1), (3, 1), (5, 1), (7, 1), (1, 2)];
+    let answer2 = slopes
+        .iter()
+        .map(|(right, down)| count_trees(&input, *right as usize, *down as usize))
+        .fold(1_i64, |acc, v| acc * i64::from(v));
+
+    println!("Answer 2: {}", answer2);
 }
 
 #[cfg(test)]
@@ -103,8 +119,17 @@ mod test {
     #[test]
     pub fn test_count_trees() {
         let sample = parse_treemap(SAMPLE);
-        let actual = count_trees(&sample);
+        let actual = count_trees(&sample, 3, 1);
 
         assert_eq!(actual, 7)
+    }
+
+    #[test]
+    pub fn test_variable_slope() {
+        let sample = parse_treemap(SAMPLE);
+        assert_eq!(count_trees(&sample, 1, 1), 2);
+        assert_eq!(count_trees(&sample, 5, 1), 3);
+        assert_eq!(count_trees(&sample, 7, 1), 4);
+        assert_eq!(count_trees(&sample, 1, 2), 2)
     }
 }
