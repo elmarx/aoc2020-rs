@@ -21,3 +21,5 @@ jobs:
         run: cargo test
       - name: run all solutions
         run: .github/run.sh
+      - name: clippy
+        run: cargo clippy -- -D warnings
