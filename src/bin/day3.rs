@@ -42,6 +42,47 @@ fn count_trees(map: &TreeMap, right: usize, down: usize) -> i32 {
         })
 }
 
+#[derive(Copy, Clone)]
+struct Step {
+    right: i32,
+    down: i32,
+}
+
+impl Step {
+    fn down(&self) -> Self {
+        Self {
+            right: self.right,
+            down: self.down - 1,
+        }
+    }
+
+    fn right(&self) -> Self {
+        Self {
+            right: self.right - 1,
+            down: self.down,
+        }
+    }
+}
+
+fn slide_x(map: &[u8], step_size: Step) -> i32 {
+    map.iter()
+        .fold((step_size, 0), |(step, count), c| {
+            match step {
+                // first, go down, i.e.: forward to the end of the row
+                Step { right, down } if down > 0 && *c != NL => (step, count),
+                // hit end of the row:
+                Step { right, down } if down > 0 && *c == NL => (step.down(), count),
+                // go right until done
+                Step { right, .. } if right > 0 => (step.right(), count),
+                Step { .. } if *c == HASH => (step_size, count + 1),
+                Step { .. } if *c == HASH => (step_size, count + 1),
+            }
+        })
+        .1
+}
+
+fn slide(map: &[u8], x: i32, y: i32, left: i32, right: i32) -> i32 {}
+
 fn main() {
     let input = parse_treemap(INPUT);
     let answer1 = count_trees(&input, 3, 1);
